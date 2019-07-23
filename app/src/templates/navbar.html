@@ -23,10 +23,10 @@
         <ul class="right hide-on-med-and-down">
             <li><a href="{% url 'blog_index' %}">Blog</a></li>
             <li>
-                <a href="{% url 'lectures_index' %}">{% trans "Lectures" %}</a>
+                <a href="{% url 'events' %}">{% trans "Events" %}</a>
             </li>
             <li>
-                <a href="{% url 'lectures_schedule' %}">{% trans "Schedule" %}</a>
+                <a href="{% url 'schedule' %}">{% trans "Schedule" %}</a>
             </li>
             {% if user.is_authenticated %}
               <li>
@@ -93,15 +93,15 @@
         </a>
     </li>
     <li>
-        <a href="{% url 'lectures_schedule' %}">
+        <a href="{% url 'schedule' %}">
             <i class="material-icons">schedule</i>
             {% trans "Schedule" %}
         </a>
     </li>
     <li>
-        <a href="{% url 'lectures_index' %}">
+        <a href="{% url 'events' %}">
             <i class="material-icons">import_contacts</i>
-            {% trans "Lectures" %}
+            {% trans "Events" %}
         </a>
     </li>
 </ul>
