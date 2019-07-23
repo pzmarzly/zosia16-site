@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^sponsors/', include('sponsors.urls')),
     url(r'^lectures/', include('lectures.urls')),
     url(r'^questions/', include('questions.urls')),
+    url(r'^schedule/', include('schedule.urls')),
     # NOTE: It only serve static files when debug=True
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

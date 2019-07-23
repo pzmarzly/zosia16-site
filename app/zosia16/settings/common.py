@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'sponsors.apps.SponsorsConfig',
     'lectures.apps.LecturesConfig',
     'questions.apps.QuestionsConfig',
+    'schedule.apps.ScheduleConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
