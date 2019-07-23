@@ -4,7 +4,8 @@
   "description": "Django 1.10 version of ZOSIA registration page - v2016 edition.",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "webpack --mode development",
+    "watch": "webpack --watch --mode development",
     "deps": "cd static && bower --allow-root install"
   },
   "repository": {
