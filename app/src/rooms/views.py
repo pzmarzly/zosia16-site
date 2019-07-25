@@ -27,36 +27,7 @@ from .serializers import room_to_dict, user_to_dict
 @require_http_methods(['GET'])
 def index(request):
     # Return HTML w/ rooms layout
-    try:
-        zosia = Zosia.objects.get(active=True)
-    except Zosia.DoesNotExist:
-        messages.error(request, _('There is no active conference'))
-        return redirect(reverse('index'))
-
-    try:
-        preferences = UserPreferences.objects.get(zosia=zosia, user=request.user)
-    except UserPreferences.DoesNotExist:
-        messages.error(request, _('Please register first'))
-        return redirect(reverse('user_zosia_register', kwargs={'zosia_id': zosia.pk}))
-
-    paid = preferences.payment_accepted
-    if not paid:
-        messages.error(request, _('Your payment must be accepted first'))
-        return redirect(reverse('accounts_profile'))
-
-    rooming_open = zosia.is_rooming_open
-    if not rooming_open:
-        messages.error(request, _('Room registration is not active yet'))
-        return redirect(reverse('accounts_profile'))
-
-    rooms = Room.objects.all_visible().prefetch_related('members').all()
-    rooms = sorted(rooms, key=lambda x: x.pk)
-    rooms_json = json.dumps(list(map(room_to_dict, rooms)))
-    context = {
-        'rooms': rooms,
-        'rooms_json': rooms_json,
-    }
-    return render(request, 'rooms/index.html', context)
+    return render(request, 'rooms/index.html')
 
 
 # GET
