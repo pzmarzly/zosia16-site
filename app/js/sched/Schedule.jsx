@@ -217,9 +217,6 @@ class Schedule extends React.Component {
 
     return (
       <div>
-        <div>
-          <a onClick={this.exportSchedule} className="waves-effect waves-light btn">Export schedule</a>
-        </div>
         <DragDropContext 
           onDragStart={this.onDragStart}
           onDragEnd={this.onDragEnd}
