@@ -39,62 +39,7 @@
               <li><a href="{% url 'accounts_signup' %}">{% trans 'Sign up' %}</a></li>
             {% endif %}
         </ul>
-<<<<<<< HEAD
         <a href="#" data-target="navie" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-=======
-        <ul id="navie" class="side-nav">
-            {% if user.is_authenticated %}
-            <li>
-                <div class="userView">
-                    <a href="{% url 'accounts_profile' %}"><span class="name">{{ user.first_name }} {{ user.last_name }}</span></a>
-                    <a href="#"><span class="email">{{ user.email }}</span></a>
-                </div>
-            </li>
-            <li>
-                <a href="{% url 'rooms_index' %}">
-                    {% trans 'Rooms' %}
-                </a>
-            </li>
-            {% if user.is_staff %}
-            <li class="divider"></li>
-            <li>
-                <a href="{% url 'admin' %}">
-                    <i class="large material-icons">lock-open</i>
-                    {% trans 'Admin' %}
-                </a>
-            </li>
-            {% endif %}
-            <li>
-                <a href="{% url 'logout' %}">
-                    <i class="fa fa-sign-out" aria-hidden="true"></i>
-                    {% trans 'Log out' %}
-                </a>
-            </li>
-            {% else %}
-              <li>
-                  <a href="{% url 'login' %}">
-                      <i class="fa fa-sign-out" aria-hidden="true"></i>
-                      {% trans 'Log in' %}
-                  </a>
-              </li>
-              <li>
-                  <a href="{% url 'accounts_signup' %}">
-                      <i class="fa fa-user-plus" aria-hidden="true"></i>
-                      {% trans 'Sign up' %}
-                  </a>
-              </li>
-            {% endif %}
-            <li><div class="divider"></div></li>
-            <li><a href="{% url 'blog_index' %}">Blog</a></li>
-            <li>
-                <a href="{% url 'schedule' %}">{% trans "Schedule" %}</a>
-            </li>
-            <li>
-                <a href="{% url 'events' %}">{% trans "Events" %}</a>
-            </li>
-        </ul>
-        <a href="#" data-activates="navie" class="button-collapse"><i class="material-icons">menu</i></a>
->>>>>>> 11e6164a55cdf5fc787c3828b81fe104adf12559
     </div>
 </nav>
 
