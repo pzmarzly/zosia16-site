@@ -6,11 +6,13 @@ const Entry = styled.div`
   border-radius: 2px;
   font-size: 10pt;
   color: white;
-  background-color: #607d8b;
-  border: 1px solid grey;
+  background-color: #009688;
   display: flex;
-  padding: 3px;
-  margin: 3px;
+  padding: 0.2rem;
+  margin: 0.2rem 0;
+  &:hover {
+    background: #4db6ac;
+  }
 `;
 
 const Time = styled.div`
@@ -49,7 +51,13 @@ const ColumnContainer = styled.div`
 `
 
 const EntryContainer = styled.div`
+  padding: 10px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  min-width: 250px;
+  min-height: 50px;
   flex-grow: 1;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
 `;
 
 export { Entry, Duration, Details, Time, DurTime, ColumnContainer, EntryContainer };

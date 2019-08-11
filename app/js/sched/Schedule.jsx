@@ -8,8 +8,55 @@ import Details from './Details'
 import styled from 'styled-components'
 
 const Layout = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: grid;
-  grid-auto-columns: 1fr;
+  grid-template-columns: 300px 300px 300px 300px auto;
+  grid-template-rows: 65px auto 300px;
+  background: white;
+`;
+
+const BottomBar = styled.div`
+  padding: 1em;
+  grid-column: 2 / 6;
+  grid-row: 3;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  overflow-y: auto;
+`
+
+const TopBar= styled.div`
+  padding: 1em;
+  grid-column: 1 / 6;
+  grid-row: 1;
+  background: #2196f3;
+  box-shadow: 0 0 5px grey;
+`
+
+const SideBar = styled.div`
+  padding: 0 1em;
+  grid-column: 1;
+  grid-row: 2 / 4;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  overflow-y: auto;
+`;
+
+const Day = styled.div`
+  padding: 0 1em;
+  overflow-y: auto;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  grid-row: 2;
+  grid-column: ${props => props.day_number + 2};
+`;
+
+const MaxSize = styled.div`
+  height:100%;
+`;
+
+const DayView = styled.div`
+
 `;
 
 class Schedule extends React.Component {
@@ -216,31 +263,68 @@ class Schedule extends React.Component {
     const days = ["thu", "fri", "sat"];
 
     return (
-      <div>
         <DragDropContext 
           onDragStart={this.onDragStart}
           onDragEnd={this.onDragEnd}
           onBeforeDragStart={this.onBeforeDragStart}>
         <Layout>
-        <LectureList 
-          key={"lec"}
-          {...lectures}
-          allLectures={this.state.allLectures}
-          focus={this.onFocus}/>
-        {days.map(dayId => {
+        <TopBar>
+          <div className="row">
+            <div className="col s4">
+              <a className="waves-effect waves-light btn">{"<"}</a>
+              <a className="waves-effect waves-light btn">{">"}</a>
+            </div>
+          </div>
+        </TopBar>
+        {/* <Main>
+          <div className="row">
+            <div className="col s12">
+              <div className="section">
+                <DaySchedule 
+                  key={this.state.columns["thu"].id}
+                  allLectures={this.state.allLectures}
+                  {...this.state.columns["thu"]}
+                  focus={this.onFocus}/>
+              </div>
+            </div>
+          </div>
+        </Main> */}
+        {days.map((dayId, i) => {
           const day = this.state.columns[dayId];
           return (
-            <DaySchedule 
-              key={day.id}
-              allLectures={this.state.allLectures}
-              {...day}
-              focus={this.onFocus}/>
+          <Day day_number={i}>
+            <div className="row">
+              <div className="col s12">
+                <div className="section">
+                  <DaySchedule 
+                    key={day.id}
+                    allLectures={this.state.allLectures}
+                    {...day}
+                    focus={this.onFocus}/>
+                </div>
+              </div>
+            </div>
+          </Day>
           )
         })}
+        <SideBar>
+          <div className="row">
+            <div className="col s12">
+              <div className="section">
+                <LectureList 
+                  key={"lec"}
+                  {...lectures}
+                  allLectures={this.state.allLectures}
+                  focus={this.onFocus}/>
+              </div>
+            </div>
+          </div>
+        </SideBar>
+        <BottomBar>
+            <Details setLecture={this.onSetLecture} lecture={this.state.allLectures[this.state.focusedLectureId]}/>
+        </BottomBar>
         </Layout>
         </DragDropContext>
-        <Details setLecture={this.onSetLecture} lecture={this.state.allLectures[this.state.focusedLectureId]}/>
-      </div>
     );
   }
 }

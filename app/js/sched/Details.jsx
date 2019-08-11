@@ -2,6 +2,7 @@
 import React from 'react';
 
 
+
 const Details = (props) => {
   const {lecture, setLecture} = props;
   const onDurationChange = ev => {
@@ -34,7 +35,7 @@ const Details = (props) => {
           <input disabled value={name} id="speaker" type="text" className="validate valid"/>
           <label className="active" htmlFor="speaker">Speaker</label>
         </div>
-        <div className="input-field col s6">
+        <div className="input-field col s3">
           <input value={duration} id="duration" type="number" onChange={onDurationChange} className="validate valid"/>
           <label className="active" htmlFor="duration">Duration(min.)</label>
         </div>
@@ -45,7 +46,7 @@ const Details = (props) => {
     const {duration} = lecture;
     content = (
       <div className="row">
-        <div className="input-field col s6">
+        <div className="input-field">
           <input value={duration} id="duration" type="number" onChange={onDurationChange} className="validate valid"/>
           <label className="active" htmlFor="duration">Duration(min.)</label>
         </div>
@@ -54,11 +55,9 @@ const Details = (props) => {
   else
     content = JSON.stringify(props.lecture, null, 2)
   return (
-    <div className="card">
-    <div className="card-content">
-      <span className="card-title"> Details </span>
+    <div>
+      <h4> Details </h4>
       {content}
-    </div>
     </div>
   )
 }

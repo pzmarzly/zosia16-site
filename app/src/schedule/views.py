@@ -18,9 +18,9 @@ from .serializers import EventSerializer
 
 class EventDetail(APIView):
     def get(self, request, version, pk, format=None):
-        event = get_object_or_404(Event, pk)
+        print(version, pk);
+        event = get_object_or_404(Event, pk=pk)
         serializer = EventSerializer(event, context={'request': request})
-
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 @login_required

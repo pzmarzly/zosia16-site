@@ -9,8 +9,9 @@ import {
   ColumnContainer,
   EntryContainer,
   Duration,
-  Details
+  Details,
 } from './StyledElelements';
+
 
 const BreakGenerator = () => {
   return (
@@ -37,11 +38,13 @@ const Lecture = (props) =>
       <Entry
       ref={provided.innerRef}
       {...provided.draggableProps}
+      onClick={() => props.focus(lecture.id)}
+      {...provided.dragHandleProps}
       >
-      <Duration {...provided.dragHandleProps}> 
+      <Duration > 
         <DurTime> {lecture.duration} </DurTime>
       </Duration>
-      <Details onClick={() => props.focus(lecture.id)}>
+      <Details >
       <div> {lecture.title} </div>
       </Details>
       </Entry>
@@ -76,8 +79,8 @@ class LectureList extends React.Component {
   render() {
 
     return (
-      <ColumnContainer>
-      <div><h4>{this.props.title}</h4></div>
+    <div>
+      <h4> Lectures </h4>
       <Droppable droppableId={this.props.id} type="PERSON">	
       {(provided, snapshot) => (
         <EntryContainer 
@@ -90,9 +93,10 @@ class LectureList extends React.Component {
         )}
         {provided.placeholder}
         </EntryContainer>
-      )}			
+      )}
       </Droppable>
-      </ColumnContainer>);	
+    </div>
+    );	
   }
 }
 

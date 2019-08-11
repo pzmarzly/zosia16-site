@@ -12,8 +12,9 @@ const Break = (props) =>
       <Entry 
       ref={provided.innerRef} 
       {...provided.draggableProps}
+      {...provided.dragHandleProps}
       >
-      <Duration {...provided.dragHandleProps}> 
+      <Duration > 
         <DurTime> {lecture.duration} </DurTime>
       </Duration>
       <Details onClick={() => props.focus(lecture.id)}> Break </Details>

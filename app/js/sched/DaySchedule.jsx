@@ -13,6 +13,7 @@ import {
   Details,
 } from './StyledElelements';
 
+
 const ScheduleLecture = (props) => {
   const { lecture, index, startTime, endTime} = props
   return (
@@ -21,8 +22,9 @@ const ScheduleLecture = (props) => {
       <Entry
       ref={provided.innerRef}
       {...provided.draggableProps}
+      {...provided.dragHandleProps}
       >
-      <Duration {...provided.dragHandleProps}>
+      <Duration >
         <Time> {showTime(startTime)} </Time>
         <DurTime> {lecture.duration} </DurTime>
         <Time> {showTime(endTime)} </Time>
@@ -63,22 +65,23 @@ class DaySchedule extends React.Component
   render ()
   {
     return (
-      <ColumnContainer>
-      <div><h4>{this.props.title}</h4></div>
+    <div>
+      <h4> {this.props.title} </h4>
       <Droppable droppableId={this.props.id} type="PERSON">
-      {(provided, snapshot) => { 
-        const time = new Date(this.props.startTime);
-        return (
-          <EntryContainer 
-          ref={provided.innerRef} 
-          {...provided.droppableProps}>
-          {this.props.lectureIds.map(
-            (lectureId, i) => this.element(lectureId, i, time))}
-          {provided.placeholder}
-          </EntryContainer>)
-      }}			
+          {(provided, snapshot) => { 
+            const time = new Date(this.props.startTime);
+            return (
+              <EntryContainer 
+              ref={provided.innerRef} 
+              {...provided.droppableProps}>
+              {this.props.lectureIds.map(
+                (lectureId, i) => this.element(lectureId, i, time))}
+              {provided.placeholder}
+              </EntryContainer>)
+          }}			
       </Droppable>
-      </ColumnContainer>);
+    </div>
+      );
   }
 }
 

@@ -65,6 +65,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 INSTALLED_APPS = [
     'materializecssform',
+    'rest_framework',
     'anymail',
     'raven.contrib.django.raven_compat',
     'rooms.apps.RoomsConfig',
