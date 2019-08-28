@@ -3,13 +3,13 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Entry = styled.div`
-  border-radius: 2px;
+  border-sizing: border-box; 
+  border-top: 1px solid white;
   font-size: 10pt;
   color: white;
   background-color: #009688;
   display: flex;
   padding: 0.2rem;
-  margin: 0.2rem 0;
   &:hover {
     background: #4db6ac;
   }
@@ -51,13 +51,9 @@ const ColumnContainer = styled.div`
 `
 
 const EntryContainer = styled.div`
-  padding: 10px;
-  background: #e0e0e0;
-  border-radius: 2px;
-  min-width: 250px;
+  border-bottom: 1px solid white;
   min-height: 50px;
-  flex-grow: 1;
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+  margin: 0.5rem;
 `;
 
 export { Entry, Duration, Details, Time, DurTime, ColumnContainer, EntryContainer };

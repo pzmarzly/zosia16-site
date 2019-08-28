@@ -5,6 +5,7 @@ import DaySchedule from './DaySchedule'
 import { initial_lectures, initial_columns } from './data'
 import IdGenerator from './IdGenerator'
 import Details from './Details'
+import Modal from './Modal'
 import styled from 'styled-components'
 
 const Layout = styled.div`
@@ -14,219 +15,337 @@ const Layout = styled.div`
   right: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: 300px 300px 300px 300px auto;
+  grid-template-columns: 300px auto;
   grid-template-rows: 65px auto 300px;
   background: white;
 `;
 
 const BottomBar = styled.div`
   padding: 1em;
-  grid-column: 2 / 6;
+  grid-column: 2;
   grid-row: 3;
-  overflow-x: hidden; /* Disable horizontal scroll */
+  overflow-x: auto; /* Disable horizontal scroll */
   overflow-y: auto;
 `
 
 const TopBar= styled.div`
   padding: 1em;
-  grid-column: 1 / 6;
+  grid-column: 1 / 3;
   grid-row: 1;
   background: #2196f3;
   box-shadow: 0 0 5px grey;
 `
 
 const SideBar = styled.div`
-  padding: 0 1em;
   grid-column: 1;
   grid-row: 2 / 4;
   overflow-x: hidden; /* Disable horizontal scroll */
   overflow-y: auto;
+  display: grid;
+  grid-template-columns: 300px;
+  grid-template-rows: 80px auto;
 `;
 
 const Day = styled.div`
-  padding: 0 1em;
-  overflow-y: auto;
-  overflow-x: hidden; /* Disable horizontal scroll */
+  background: #e0e0e0;
+  overflow-y: scroll;
+  margin: 1rem;
   grid-row: 2;
-  grid-column: ${props => props.day_number + 2};
+  grid-column: ${props => props.day_number + 1};
+`;
+
+const Main = styled.div`
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 100%;
+  grid-row: 2;
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 300px 300px 300px 300px 300px;
+  grid-template-rows: 80px auto;
+`;
+
+const Title = styled.div`
+  grid-row: 1;
+  grid-column: ${props => props.day_number + 1};
+  transition: color 0.4s;
+  &:hover {
+    cursor: ${props => props.delete ? "not-allowed" : "auto"};
+    color: ${props => props.delete ? "#ff3d00" : "inherit"};
+  }
 `;
 
 const MaxSize = styled.div`
   height:100%;
 `;
 
-const DayView = styled.div`
+const breakIdGenerator = new IdGenerator("BREAK");
+const timepickerIdGenerator = new IdGenerator("Timepicker");
+const datepickerIdGenerator = new IdGenerator("Datepicker");
 
-`;
+const Timepicker = (props) => {
+  const [id, setId] = React.useState(timepickerIdGenerator.getId());
+  React.useEffect(() => {
+    const elem = document.querySelector('#' + id);
+    elem.value = props.initial_time;
+    const instance = M.Timepicker.init(elem, { 
+      twelveHour: false,
+      onCloseEnd: () => props.onSelect(instance.hours, instance.minutes),
+    });
+  })
+  return (
+  <div className="input-field">
+    <input id={id} type="text" className="timepicker"/>
+    <label className="active" htmlFor={id}>{props.label}</label>
+  </div>
+  )
+}
 
-class Schedule extends React.Component {
-  breakIdGenerator = new IdGenerator("BREAK");
-  state = {
-    allLectures: initial_lectures,
-    columns: initial_columns,
-    focusedLectureId: "1",
-  };
+const Datepicker = props => {
+  const [id, setId] = React.useState(datepickerIdGenerator.getId());
+  React.useEffect(() => {
+    const elem = document.querySelector('#' + id);
+    const instance = M.Datepicker.init(elem, {
+      onClose: () => {
+        props.onSelect(new Date(instance.toString()));
+        console.log(instance.toString());
+      },
+    });
+  });
+  return (
+    <div className="input-field">
+      <input id={id} type="text" className="datepicker"/>
+      <label className="active" htmlFor={id}>
+        {props.label}
+      </label>
+    </div>
+  )
+}
 
-  swapInSameColumn = (result, state) => {
+const AddDayModal = React.forwardRef((props, ref) => {
+  const [showed, setShowed] = React.useState(false);
+  const show = () => { setShowed(true); }
+  const hide = () => { setShowed(false); }
+  const onSelect = date => {
+    hide();
+    props.onAddDay(date);
+  }
+  React.useImperativeHandle(ref, () => ({ show: show }) );
+  
+  return (
+    showed ? 
+      <Modal onCancel={hide}> 
+        <div className="row">
+          <h3>
+            Add day
+          </h3>
+        </div>
+        <div className="row">
+          <div className="col s6">
+            <Datepicker onSelect={onSelect}/>
+          </div>
+        </div>
+      </Modal> : ""
+  )
+});
+
+const url = () => "http://" + window.location.hostname + ":" + window.location.port
+const get = endpoint => 
+  fetch(url() + endpoint)
+    .then(resp => resp.json())
+
+const get_schedule = id => get("/schedule/schedules/v1/" + id)
+const get_events = () => get("/schedule/events/v1")
+
+const Schedule = () => {
+  const [lectures, setLectures] = React.useState(initial_lectures);
+  const [columns, setColumns] = React.useState(initial_columns);
+  const [focusedLecture, setFocusedLecture] = React.useState(1);
+  const [showModal, setShowModal] = React.useState(false);
+  const [deleteMode, setDelete] = React.useState(false);
+  const addDayModalRef = React.useRef();
+  React.useEffect(() => {
+    const url = new URL(window.location.href);
+    const schedule_id = url.searchParams.get("schedule_id");
+    Promise.all([get_schedule(schedule_id), get_events()])
+      .then(([sched, events]) => {
+        let allLectureIds = events.map(event => event.pk);
+        const newLectures = events.reduce((map, obj) => {
+          map[obj.pk] = {
+            type: "lecture",
+            id: obj.pk,
+            title: obj.title,
+            name: "Zosia Debeściak", // TODO
+            duration: 10,
+          }
+          return map;
+        }, {});
+        setLectures(newLectures);
+        console.log(sched);
+        const newColumns = {};
+        sched.days.forEach(day => {
+          console.log(day.start);
+          const day_start = new Date(Date.parse(day.start));
+          newColumns[day.pk.toString()] = {
+            id: day.pk.toString(),
+            title: day_start.toLocaleDateString(),
+            lectures: day.entries.map(entry => entry.event),
+            startTime: day_start,
+          }
+          
+          day.entries.forEach(entry => {
+            allLectureIds = allLectureIds.filter(id => id != entry.event); 
+          });
+        });
+        newColumns["lec"] = 
+        {
+          id: "lec",
+          title: "Lectures",
+          lectures: allLectureIds,
+          startTime: Date.now()
+        };
+        setColumns(newColumns);
+      });
+  }, []);
+
+  const swapInSameColumn = (result, state) => {
     const { source, destination, draggableId } = result;
     if (source.index === destination.index) { return state; }
     const { droppableId } = source;
-    const column = state.columns[droppableId];
-    const newLectureIds = Array.from(column.lectureIds);
+    const column = columns[droppableId];
+    const newLectures = Array.from(column.lectures);
 
-    newLectureIds.splice(source.index, 1);
-    newLectureIds.splice(destination.index, 0, draggableId);
+    newLectures.splice(source.index, 1);
+    newLectures.splice(destination.index, 0, draggableId);
 
     return {
-      ...this.state,
-      columns: {
-        ...state.columns,
-        [column.id]: {
-          ...column,
-          ["lectureIds"]: newLectureIds,
-        }
+      ...columns,
+      [column.id]: {
+        ...column,
+        ["lectures"]: newLectures,
       }
     }
   };
 
-  deleteSource = (result, state) => {
+  const deleteSource = (result, state) => {
     const { source, destination, draggableId } = result;
     const { droppableId } = source;
-    const column = this.state.columns[droppableId];
-    const newLectureIds = Array.from(column.lectureIds);
+    const column = columns[droppableId];
+    const newLectures = Array.from(column.lectures);
 
-    newLectureIds.splice(source.index, 1);
+    newLectures.splice(source.index, 1);
 
     return {
-      ...this.state,
-      columns: {
-        ...this.state.columns,
-        [column.id]: {
-          ...column,
-          ["lectureIds"]: newLectureIds,
-        }
+      ...columns,
+      [column.id]: {
+        ...column,
+        ["lectures"]: newLectures,
       }
     }
   };
 
-  swapInOtherColumns = (result, state) => {
+  const swapInOtherColumns = (result, state) => {
     const { source, destination, draggableId } = result;
     let { droppableId, index } = source;
-    const sourceColumn = this.state.columns[droppableId];
-    const sourceColumnIds = Array.from(sourceColumn.lectureIds);
-    sourceColumnIds.splice(index, 1);
+    const sourceColumn = columns[droppableId];
+    const sourceColumnLectures = Array.from(sourceColumn.lectures);
+    sourceColumnLectures.splice(index, 1);
 
     droppableId = destination.droppableId;
     index = destination.index;
-    const destinationColumn = this.state.columns[droppableId];
-    const destinationColumnIds = Array.from(destinationColumn.lectureIds);
-    destinationColumnIds.splice(index, 0, draggableId);
+    const destinationColumn = columns[droppableId];
+    const destinationColumnLectures = Array.from(destinationColumn.lectures);
+    destinationColumnLectures.splice(index, 0, draggableId);
 
     return {
-      ...this.state,
-      columns: {
-        ...this.state.columns,
-        [sourceColumn.id]: {
-          ...sourceColumn,
-          ["lectureIds"]: sourceColumnIds,
-        },
-        [destinationColumn.id]: {
-          ...destinationColumn,
-          ["lectureIds"]: destinationColumnIds
-        }
+      ...columns,
+      [sourceColumn.id]: {
+        ...sourceColumn,
+        ["lectures"]: sourceColumnLectures,
+      },
+      [destinationColumn.id]: {
+        ...destinationColumn,
+        ["lectures"]: destinationColumnLectures,
       }
     };
   };
 
-  swap = (result, state) => {
+  const swap = (result, state) => {
     const { source, destination, draggableId } = result;
     if (source.droppableId === destination.droppableId)
     {
-      return this.swapInSameColumn(result, state);
+      return swapInSameColumn(result, state);
     }
     else
     {
-      return this.swapInOtherColumns(result, state);
+      return swapInOtherColumns(result, state);
     }
   };
 
-  handleBreaks = (result, state) => {
+  const handleBreaks = (result, state) => {
     const { source, destination, draggableId } = result;
     if ( destination.droppableId === "break"
       || destination.droppableId === "lec")
     {
-      return this.deleteSource(result, state);
+      return deleteSource(result, state);
     }
     else
     {
-      return this.swap(result, state);
+      return swap(result, state);
     }
   };
 
-  newBreakToDestination = (result, state) => {
+  const newBreakToDestination = (result, state) => {
     const { source, destination, draggableId } = result;
     if (destination.droppableId === "lec") {
       return state;
     }
 
-    const breakId = this.breakIdGenerator.getId();
+    const breakId = breakIdGenerator.getId();
     let { droppableId, index } = destination;
-    const destinationColumn = this.state.columns[droppableId];
-    const destinationColumnIds = Array.from(destinationColumn.lectureIds);
-    destinationColumnIds.splice(index, 0, breakId);
+    const destinationColumn = columns[droppableId];
+    const destinationColumnLectures = Array.from(destinationColumn.lectures);
+    destinationColumnLectures.splice(index, 0, breakId);
+
+    setLectures({
+      ...lectures,
+      [breakId] : {
+        type: "break",
+        id: breakId,
+        duration: 10,
+      }
+    });
 
     return {
-      ...this.state,
-      allLectures: {
-        ...this.state.allLectures,
-        [breakId] : {
-          type: "break",
-          id: breakId,
-          duration: 10,
+      ...columns,
+      [destinationColumn.id]: {
+        ...destinationColumn,
+        ["lectures"]: destinationColumnLectures
         }
-      },
-      columns: {
-        ...this.state.columns,
-        [destinationColumn.id]: {
-          ...destinationColumn,
-          ["lectureIds"]: destinationColumnIds
-        }
-      }
     };
   }
 
-  onSetLecture = lecture => {
-    if (lecture.id in this.state.allLectures)
+  const onSetLecture = lecture => {
+    if (lecture.id in lectures)
     {
-      this.setState({
-        ...this.state,
-        allLectures: {
-          ...this.state.allLectures,
+      setLectures({
+          ...lectures,
           [lecture.id]: lecture,
-        }
       });
     }
   }
 
-  onFocus = lectureId => {
-    this.setState({
-      ...this.state,
-      focusedLectureId: lectureId,
-    });
+  const onFocus = lectureId => {
+    setFocusedLecture(lectureId);
   }
 
-  onDragStart = result => {
+  const onDragStart = result => {
   }
 
-  onBeforeDragStart = result => {
+  const onBeforeDragStart = result => {
   }
 
-  onDragEnd = result => {
-    const { source, destination, draggableId } = result;
-
-  }
-
-  onDragEnd = result => {
+  const onDragEnd = result => {
     const { source, destination, draggableId } = result;
 
     if (!destination) {
@@ -234,99 +353,160 @@ class Schedule extends React.Component {
     }
 
     if (draggableId === "break_gen") {
-      const newState = this.newBreakToDestination(result, this.state);
-      this.setState(newState);
+      const newState = newBreakToDestination(result, columns);
+      setColumns(newState);
       return;
     }
 
-    const { type } = this.state.allLectures[draggableId];
+    const { type } = lectures[draggableId];
     if (type === "break") {
-      const newState = this.handleBreaks(result, this.state);
-      this.setState(newState);
+      const newState = handleBreaks(result, columns);
+      setColumns(newState);
       return;
     }
 
-    this.setState(this.swap(result, this.state));
+    setColumns(swap(result, columns));
   }
 
-  exportSchedule = () => {
-    const element = document.createElement("a");
-    const file = new Blob([JSON.stringify(this.state, null, 2)], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = "schedule.json";
-    element.click();
+  const onCancel = () => {
+    setShowModal(false);
   }
 
+  const showAddDayModal = () => addDayModalRef.current.show();
 
-  render() {
-    const lectures = this.state.columns["lec"];
-    const days = ["thu", "fri", "sat"];
+  const addDay = date => {
+    setShowModal(false);
+    
+    setColumns({
+      ...columns,
+      [date.getTime()] : {
+        id: date.getTime(),
+        title: date.toLocaleDateString(),
+        lectures: [],
+        startTime: date,
+      }
+    })
+  }
 
-    return (
-        <DragDropContext 
-          onDragStart={this.onDragStart}
-          onDragEnd={this.onDragEnd}
-          onBeforeDragStart={this.onBeforeDragStart}>
-        <Layout>
-        <TopBar>
+  const days = Object.keys(columns).filter(id => id != "lec");
+
+  const ToggleButton = props => {
+    const [toggle, setToggle] = React.useState("false");
+
+  }
+
+  return (
+      <DragDropContext 
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onBeforeDragStart={onBeforeDragStart}>
+      <Layout>
+      <TopBar>
+        <div className="row">
+          <div className="col">
+            <a className="waves-effect waves-light btn">{"SAVE"}</a>
+          </div>
+          <div className="col">
+            <a onClick={showAddDayModal} className="waves-effect waves-light btn">
+              <i className="material-icons">add</i>
+            </a>
+          </div>
+          <div className="col">
+            <a onClick={() => setDelete(!deleteMode)} className={"waves-effect waves-light btn" + (deleteMode ? " deep-orange accent-3" : "")}>
+              <i className="material-icons">delete</i>
+            </a>
+          </div>
+        </div>
+      </TopBar>
+      <Main>
+      {days.map((dayId, i) => (
+        <Title day_number={i} key={dayId} delete={deleteMode}>
           <div className="row">
+            <div className="col s8"
+            onClick={() => 
+            {
+              if (deleteMode) 
+              {
+                const newColumns = {
+                  ...columns,
+                  ["lec"]: {
+                    ...columns["lec"],
+                    lectures: columns["lec"].lectures.concat(
+                      columns[dayId].lectures.filter(id => lectures[id].type != "break"))
+                  }
+                }
+                delete newColumns[dayId];
+                setColumns(newColumns);
+              }
+            }}>
+              <div className="section">
+                <h4>
+                  {columns[dayId].title}
+                </h4>
+              </div>
+            </div>
             <div className="col s4">
-              <a className="waves-effect waves-light btn">{"<"}</a>
-              <a className="waves-effect waves-light btn">{">"}</a>
+              <div className="section">
+                <Timepicker 
+                  label="Start time" 
+                  initial_time={columns[dayId].startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  onSelect={(hour, minute) => {
+                    const time = columns[dayId].startTime;
+                    time.setHours(hour);
+                    time.setMinutes(minute);
+                    setColumns({
+                      ...columns,
+                      [dayId] : {
+                        ...columns[dayId],
+                        startTime: time,
+                      }
+                    })
+                  }}/>
+              </div>
             </div>
-          </div>
-        </TopBar>
-        {/* <Main>
+          </div> 
+        </Title>
+      ))}
+      {days.map((dayId, i) => {
+        const day = columns[dayId];
+        return (
+        <Day day_number={i} key={i}>
+          <DaySchedule 
+            key={day.id}
+            allLectures={lectures}
+            {...day}
+            focus={onFocus}/>
+        </Day>
+        )
+      })}
+      </Main>
+      <SideBar>
+        <Title day_number={0}>
           <div className="row">
             <div className="col s12">
               <div className="section">
-                <DaySchedule 
-                  key={this.state.columns["thu"].id}
-                  allLectures={this.state.allLectures}
-                  {...this.state.columns["thu"]}
-                  focus={this.onFocus}/>
+                <h4>
+                  {"Lectures"}
+                </h4>
               </div>
             </div>
-          </div>
-        </Main> */}
-        {days.map((dayId, i) => {
-          const day = this.state.columns[dayId];
-          return (
-          <Day day_number={i}>
-            <div className="row">
-              <div className="col s12">
-                <div className="section">
-                  <DaySchedule 
-                    key={day.id}
-                    allLectures={this.state.allLectures}
-                    {...day}
-                    focus={this.onFocus}/>
-                </div>
-              </div>
-            </div>
-          </Day>
-          )
-        })}
-        <SideBar>
-          <div className="row">
-            <div className="col s12">
-              <div className="section">
-                <LectureList 
-                  key={"lec"}
-                  {...lectures}
-                  allLectures={this.state.allLectures}
-                  focus={this.onFocus}/>
-              </div>
-            </div>
-          </div>
-        </SideBar>
-        <BottomBar>
-            <Details setLecture={this.onSetLecture} lecture={this.state.allLectures[this.state.focusedLectureId]}/>
-        </BottomBar>
-        </Layout>
-        </DragDropContext>
-    );
-  }
+          </div> 
+        </Title>
+        <Day day_number={0}>
+          <LectureList 
+            key={"lec"}
+            {...columns["lec"]}
+            allLectures={lectures}
+            focus={onFocus}/>
+        </Day>
+      </SideBar>
+      <BottomBar>
+        <Details setLecture={onSetLecture} lecture={lectures[focusedLecture]}/>
+      </BottomBar>
+      </Layout>
+        <AddDayModal ref={addDayModalRef} onAddDay={addDay} show={showModal}/>
+      </DragDropContext>
+  );
 }
 
 export default Schedule;

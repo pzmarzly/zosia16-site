@@ -13,14 +13,25 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import EventSerializer
+from .serializers import EventSerializer, ScheduleSerializer
 
 
 class EventDetail(APIView):
     def get(self, request, version, pk, format=None):
-        print(version, pk);
         event = get_object_or_404(Event, pk=pk)
         serializer = EventSerializer(event, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class EventList(APIView):
+    def get(self, request, version, format=None):
+        events = Event.objects.all()
+        serializer = EventSerializer(events, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ScheduleDetail(APIView):
+    def get(self, request, version, pk, format=None):
+        schedule = get_object_or_404(Schedule, pk=pk)
+        serializer = ScheduleSerializer(schedule, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 @login_required

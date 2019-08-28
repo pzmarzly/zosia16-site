@@ -11,9 +11,7 @@
     <div id="react-root">
     </div>
     <!-- FOOTER -->
-    {% block custom_scripts %}
-        <script type="text/javascript" src="{% static 'script/sched.min.js' %}"></script>
-    {% endblock custom_scripts %}
     {% include 'scripts.html' %}
+    <script type="text/javascript" src="{% static 'script/sched.min.js' %}"></script>
 </body>
 </html>

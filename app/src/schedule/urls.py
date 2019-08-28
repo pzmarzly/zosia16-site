@@ -5,6 +5,8 @@ from . import views
 
 urlpatterns = [
     url(r'^events/(?P<version>(v1))/(?P<pk>\d+)', views.EventDetail.as_view(), name="event-detail"),
+    url(r'^events/(?P<version>(v1))', views.EventList.as_view(), name="event-list"),
+    url(r'^schedules/(?P<version>(v1))/(?P<pk>\d+)', views.ScheduleDetail.as_view(), name="schedule-detail"),
     url(r'^$', views.index, name='schedule'),
     url(r'^add_event$', views.add_event, name='add_event'),
     url(r'^event/(?P<event_id>\d+)/edit$', views.edit_event, name='event edit'),

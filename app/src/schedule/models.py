@@ -22,9 +22,14 @@ class Schedule(models.Model):
     name = models.CharField(verbose_name=_("Name"), max_length=256)
     is_active = models.BooleanField()
 
+class ScheduleDay(models.Model):
+    name = models.CharField(verbose_name=_("Name"), max_length=256)
+    start = models.DateTimeField(verbose_name=_("Start"))
+    schedule = models.ForeignKey(Schedule, verbose_name=_("Schedule"), related_name='days', on_delete=models.CASCADE)
+
 class ScheduleEntry(models.Model):
     event = models.ForeignKey(Event, verbose_name=_("Event"), on_delete=models.CASCADE)
-    schedule = models.ForeignKey(Schedule, verbose_name=_("Schedule"), related_name='entry', on_delete=models.CASCADE)
+    schedule_day = models.ForeignKey(ScheduleDay, verbose_name=_("Schedule day"), related_name='entries', on_delete=models.CASCADE)
     start = models.DateTimeField(verbose_name="Start")
     end = models.DateTimeField(verbose_name="End")
 

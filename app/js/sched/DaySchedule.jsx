@@ -65,8 +65,6 @@ class DaySchedule extends React.Component
   render ()
   {
     return (
-    <div>
-      <h4> {this.props.title} </h4>
       <Droppable droppableId={this.props.id} type="PERSON">
           {(provided, snapshot) => { 
             const time = new Date(this.props.startTime);
@@ -74,13 +72,12 @@ class DaySchedule extends React.Component
               <EntryContainer 
               ref={provided.innerRef} 
               {...provided.droppableProps}>
-              {this.props.lectureIds.map(
+              {this.props.lectures.map(
                 (lectureId, i) => this.element(lectureId, i, time))}
               {provided.placeholder}
               </EntryContainer>)
           }}			
       </Droppable>
-    </div>
       );
   }
 }

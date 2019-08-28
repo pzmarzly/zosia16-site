@@ -79,8 +79,6 @@ class LectureList extends React.Component {
   render() {
 
     return (
-    <div>
-      <h4> Lectures </h4>
       <Droppable droppableId={this.props.id} type="PERSON">	
       {(provided, snapshot) => (
         <EntryContainer 
@@ -88,14 +86,13 @@ class LectureList extends React.Component {
         {...provided.droppableProps}
         >
         <BreakGenerator/>
-        {this.props.lectureIds.map(
+        {this.props.lectures.map(
           (lectureId, i) => this.element(lectureId, i)
         )}
         {provided.placeholder}
         </EntryContainer>
       )}
       </Droppable>
-    </div>
     );	
   }
 }
