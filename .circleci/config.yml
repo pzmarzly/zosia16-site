@@ -55,4 +55,5 @@ workflows:
             - run_tests
           filters:
             branches:
-              only: aws_deployment
+              only: 
+                - master
