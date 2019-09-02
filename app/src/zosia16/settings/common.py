@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 import random
 import string
+
 import raven
 
 # Google API key
@@ -57,6 +58,11 @@ if sentry_dsn:
         # release based on the git info.
         'release': raven.fetch_git_sha(os.path.dirname(os.pardir)),
     }
+
+# Django REST framework (https://www.django-rest-framework.org)
+REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning'
+}
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -114,7 +120,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'zosia16.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
@@ -125,7 +130,6 @@ DATABASES = {
         'USER': 'zosia',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -168,7 +172,6 @@ USE_L10N = False
 USE_TZ = True
 
 DATE_FORMAT = 'd.n.o'
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
