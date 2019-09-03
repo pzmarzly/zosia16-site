@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import RoomView from "./room";
 import styled from "styled-components";
 import { ModalRoot, ModalProvider } from "./modals/modals";
+import Schedule from "./schedule";
 
 const Users = () => {
   return (
@@ -59,16 +60,6 @@ const QA = () => (
   </div>
 )
 
-const Lectures = () => (
-  <div id="lectures" className="col s12">
-    <ul className="collection">
-      <a href="/lectures/all" className="collection-item">Lectures</a>
-      <a href="/lectures/create" className="collection-item">Add lecture</a>
-      <a href="/lectures/schedule/update/" className="collection-item">Update schedule</a>
-    </ul>
-  </div>
-)
-
 const Rooms = () => (
   <div id="rooms" className="col s12">
     <ul className="collection">
@@ -79,7 +70,7 @@ const Rooms = () => (
 )
 
 const AdminView = props => {
-  const [current_view, setView] = React.useState("rooms");
+  const [current_view, setView] = React.useState("schedule");
   const views = {
     "users": {
       component: Users,
@@ -102,7 +93,7 @@ const AdminView = props => {
       name: "Q&A",
     },
     "schedule": {
-      component: Lectures,
+      component: Schedule,
       name: "Schedule"
     },
     "rooms": {

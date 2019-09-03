@@ -34,6 +34,27 @@ class ScheduleDetail(APIView):
         serializer = ScheduleSerializer(schedule, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request, version, pk, format=None):
+        schedule = get_object_or_404(Schedule, pk=pk)
+        schedule.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ScheduleList(APIView):
+    def post(self, request, version, format=None):
+        serializer = ScheduleSerializer(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, version, format=None):
+        schedules = Schedule.objects.all()
+        serializer = ScheduleSerializer(schedules, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 @login_required
 @require_http_methods(['GET'])
 def index(request):

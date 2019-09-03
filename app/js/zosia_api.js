@@ -66,4 +66,7 @@ const hide_room = (id) => post('/api/v1/rooms/' + id + '/join', {})
 const unhide_room = (id) => post('/api/v1/rooms/' + id + '/join', {})
 const lock_room = (id, user_id) => post('/api/v1/rooms/' + id + '/lock', { user_id })
 const unlock_room = (id, user_id) => post('/api/v1/rooms/' + id + '/unlock', { user_id })
+export const get_schedules = () => get('/schedule/schedules/v1/')
+export const create_schedule = (json) => post('/schedule/schedules/v1/', json)
+export const delete_schedule = (id) => delete_('/schedule/schedules/v1/' + id + '/')
 
