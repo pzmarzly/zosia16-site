@@ -20,7 +20,9 @@ const Details = (props) => {
       duration: newDuration,
     });
   }
-
+  if (lecture == undefined) {
+    return null;
+  }
   const {type} = lecture;
   let content = "";
   if (type === "lecture") {

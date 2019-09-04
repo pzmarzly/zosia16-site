@@ -5,8 +5,13 @@ import DaySchedule from './DaySchedule'
 import { initial_lectures, initial_columns } from './data'
 import IdGenerator from './IdGenerator'
 import Details from './Details'
-import Modal from './Modal'
 import styled from 'styled-components'
+import TimeForm from './../forms/time_form'
+import DateForm from './../forms/date_form'
+import { useForm } from '../forms/forms';
+import Modal from '../modals/materialize_modal';
+import { useModal } from '../modals/modals';
+
 
 const Layout = styled.div`
   position: fixed;
@@ -83,24 +88,6 @@ const breakIdGenerator = new IdGenerator("BREAK");
 const timepickerIdGenerator = new IdGenerator("Timepicker");
 const datepickerIdGenerator = new IdGenerator("Datepicker");
 
-const Timepicker = (props) => {
-  const [id, setId] = React.useState(timepickerIdGenerator.getId());
-  React.useEffect(() => {
-    const elem = document.querySelector('#' + id);
-    elem.value = props.initial_time;
-    const instance = M.Timepicker.init(elem, { 
-      twelveHour: false,
-      onCloseEnd: () => props.onSelect(instance.hours, instance.minutes),
-    });
-  })
-  return (
-  <div className="input-field">
-    <input id={id} type="text" className="timepicker"/>
-    <label className="active" htmlFor={id}>{props.label}</label>
-  </div>
-  )
-}
-
 const Datepicker = props => {
   const [id, setId] = React.useState(datepickerIdGenerator.getId());
   React.useEffect(() => {
@@ -122,32 +109,59 @@ const Datepicker = props => {
   )
 }
 
-const AddDayModal = React.forwardRef((props, ref) => {
-  const [showed, setShowed] = React.useState(false);
-  const show = () => { setShowed(true); }
-  const hide = () => { setShowed(false); }
-  const onSelect = date => {
-    hide();
-    props.onAddDay(date);
+const AddDayModal = props => {
+  const submit = () => {
+    props.addDay(new Date(formValue));
   }
-  React.useImperativeHandle(ref, () => ({ show: show }) );
+
+  const onSelect = () => {
+
+  }
+
+  const [FormInput, formValue, setFormValue] = useForm(DateForm);
   
   return (
-    showed ? 
-      <Modal onCancel={hide}> 
+    <Modal closeModal={props.closeModal}>
+      <div className="modal-content">
+        <h4>Add Room</h4>
         <div className="row">
-          <h3>
-            Add day
-          </h3>
+          <FormInput value={formValue} onChange={setFormValue} name="Date"/>
         </div>
-        <div className="row">
-          <div className="col s6">
-            <Datepicker onSelect={onSelect}/>
-          </div>
-        </div>
-      </Modal> : ""
-  )
-});
+      </div>
+      <div className="modal-footer">
+        <a href="#!" className="modal-close waves-effect waves-green btn-flat" onClick={submit}>
+          Add
+        </a>
+      </div>
+    </Modal>
+  );
+}
+
+// const AddDayModal = React.forwardRef((props, ref) => {
+//   const [showed, setShowed] = React.useState(false);
+//   const show = () => { setShowed(true); }
+//   const hide = () => { setShowed(false); }
+//   const onSelect = date => {
+//     hide();
+//     props.onAddDay(date);
+//   }
+//   React.useImperativeHandle(ref, () => ({ show: show }) );
+  
+//   return null
+//     // showed ? 
+//     //   <Modal onCancel={hide}> 
+//     //     <div className="row">
+//     //       <h3>
+//     //         Add day
+//     //       </h3>
+//     //     </div>
+//     //     <div className="row">
+//     //       <div className="col s6">
+//     //         <Datepicker onSelect={onSelect}/>
+//     //       </div>
+//     //     </div>
+//     //   </Modal> : ""
+// });
 
 const url = () => "http://" + window.location.hostname + ":" + window.location.port
 const get = endpoint => 
@@ -158,12 +172,22 @@ const get_schedule = id => get("/schedule/schedules/v1/" + id)
 const get_events = () => get("/schedule/events/v1")
 
 const Schedule = () => {
-  const [lectures, setLectures] = React.useState(initial_lectures);
-  const [columns, setColumns] = React.useState(initial_columns);
+  const [schedule, setSchedule] = React.useState({
+    lectures: initial_lectures,
+    columns: initial_columns,
+  });
+  const lectures = schedule.lectures;
+  const columns = schedule.columns;
+  const setLectures = lectures => {
+    setSchedule({...schedule, lectures})
+  }
+  const setColumns = columns => {
+    setSchedule({...schedule, columns});
+  }
   const [focusedLecture, setFocusedLecture] = React.useState(1);
-  const [showModal, setShowModal] = React.useState(false);
   const [deleteMode, setDelete] = React.useState(false);
-  const addDayModalRef = React.useRef();
+  const [openModal, closeModal] = useModal();
+
   React.useEffect(() => {
     const url = new URL(window.location.href);
     const schedule_id = url.searchParams.get("schedule_id");
@@ -180,7 +204,6 @@ const Schedule = () => {
           }
           return map;
         }, {});
-        setLectures(newLectures);
         console.log(sched);
         const newColumns = {};
         sched.days.forEach(day => {
@@ -204,7 +227,10 @@ const Schedule = () => {
           lectures: allLectureIds,
           startTime: Date.now()
         };
-        setColumns(newColumns);
+        setSchedule({
+          lectures: newLectures,
+          columns: newColumns,
+        })
       });
   }, []);
 
@@ -368,15 +394,9 @@ const Schedule = () => {
     setColumns(swap(result, columns));
   }
 
-  const onCancel = () => {
-    setShowModal(false);
-  }
-
-  const showAddDayModal = () => addDayModalRef.current.show();
+  const showAddDayModal = () => openModal(AddDayModal, {closeModal, addDay});
 
   const addDay = date => {
-    setShowModal(false);
-    
     setColumns({
       ...columns,
       [date.getTime()] : {
@@ -447,7 +467,7 @@ const Schedule = () => {
             </div>
             <div className="col s4">
               <div className="section">
-                <Timepicker 
+                {/* <TimeForm
                   label="Start time" 
                   initial_time={columns[dayId].startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   onSelect={(hour, minute) => {
@@ -461,7 +481,7 @@ const Schedule = () => {
                         startTime: time,
                       }
                     })
-                  }}/>
+                  }}/> */}
               </div>
             </div>
           </div> 
@@ -504,7 +524,6 @@ const Schedule = () => {
         <Details setLecture={onSetLecture} lecture={lectures[focusedLecture]}/>
       </BottomBar>
       </Layout>
-        <AddDayModal ref={addDayModalRef} onAddDay={addDay} show={showModal}/>
       </DragDropContext>
   );
 }

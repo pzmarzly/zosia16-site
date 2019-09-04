@@ -1,6 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Schedule from './Schedule';
+import { ModalProvider, ModalRoot } from '../modals/modals';
 
-ReactDOM.render(<Schedule/>, document.getElementById('react-root'));
+ReactDOM.render(
+  <ModalProvider>
+    <ModalRoot/>
+    <Schedule/>
+  </ModalProvider>, 
+  document.getElementById('react-root'));
 
