@@ -1,7 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinLengthValidator
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 
 class UserManager(BaseUserManager):
@@ -11,7 +11,7 @@ class UserManager(BaseUserManager):
         email = UserManager.normalize_email(email)
         user = self.model(email=email, is_active=is_active,
                           is_staff=is_staff, **extra_fields)
-        if password:
+        if password is not None:
             user.set_password(password)
         user.save()
         return user

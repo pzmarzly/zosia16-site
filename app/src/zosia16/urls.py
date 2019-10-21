@@ -17,8 +17,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, re_path
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 
-# NOTE: It only serve static files when debug=True
+schema_view = get_schema_view(
+    openapi.Info(title="ZOSIA API", default_version='v1', description="API for ZOSIA site"),
+    public=True,
+    permission_classes=(permissions.AllowAny,)
+)
+
 urlpatterns = \
     [
         # site URLs
@@ -33,11 +41,11 @@ urlpatterns = \
         re_path(r'^schedule/', include('schedule.urls')),
 
         # API URLs
-        re_path(r'^api/(?P<version>(v1))/rooms/', include(('rooms.api.urls', 'rooms'))),
-        re_path(r'^api/(?P<version>(v1))/schedules/', include(('schedule.api.urls', 'schedule'))),
+        re_path(r'^api/(?P<version>(v1))/rooms/', include('rooms.api.urls')),
+        re_path(r'^api/(?P<version>(v1))/users/', include('users.api.urls')),
+        re_path(r'^api/(?P<version>(v1))/schedules/', include('schedule.api.urls')),
+
+        # Swagger URLs
+        re_path(r'^api/swagger/', schema_view.with_ui('swagger', cache_timeout=0),
+                name='schema-swagger-ui')
     ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-if settings.DEBUG:
-    import debug_toolbar
-
-    urlpatterns += [re_path(r'^__debug__/', include(debug_toolbar.urls))]

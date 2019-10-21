@@ -1,11 +1,10 @@
 import csv
-import json
 from io import TextIOWrapper
+import json
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.template import Context, loader
@@ -15,9 +14,9 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.vary import vary_on_cookie
 
 from conferences.models import UserPreferences, Zosia
-from .forms import UploadFileForm
-from .models import Room, UserRoom
-from .serializers import room_to_dict, user_to_dict
+from rooms.forms import UploadFileForm
+from rooms.models import Room
+from rooms.serializers import room_to_dict, user_to_dict
 
 
 # Cache hard (15mins)
@@ -38,11 +37,11 @@ def status(request):
     # Ajax
     # Return JSON view of rooms
     zosia = get_object_or_404(Zosia, active=True)
-    can_start_rooming = zosia.can_start_rooming(
-        get_object_or_404(UserPreferences, zosia=zosia, user=request.user))
-    rooms = Room.objects.all_visible().select_related('lock').prefetch_related(
-        'members').all()
+    user_prefs = get_object_or_404(UserPreferences, zosia=zosia, user=request.user)
+    can_start_rooming = zosia.can_user_choose_room(user_prefs)
+    rooms = Room.objects.all_visible().select_related('lock').prefetch_related('members').all()
     rooms_view = []
+
     for room in rooms:
         dic = room_to_dict(room)
         dic['is_owned_by'] = room.is_locked and room.lock.is_owned_by(
@@ -56,38 +55,6 @@ def status(request):
         'rooms': rooms_view,
     }
     return JsonResponse(view)
-
-
-@login_required
-@require_http_methods(['POST'])
-def join(request, room_id):
-    zosia = get_object_or_404(Zosia, active=True)
-    room = get_object_or_404(Room, pk=room_id)
-    password = request.POST.get('password', '')
-    if not zosia.can_start_rooming(
-            get_object_or_404(UserPreferences, zosia=zosia, user=request.user)):
-        return JsonResponse({'error': 'cannot_room_yet'}, status=400)
-
-    should_lock = request.POST.get('lock', True) in [True, 'True', '1', 'on', 'true']
-    result = room.join_and_lock(request.user, password=password, lock=should_lock)
-    if type(result) is ValidationError:
-        return JsonResponse({'status': result.message}, status=400)
-    else:
-        return JsonResponse({'status': 'ok'})
-
-
-@login_required
-@require_http_methods(['POST'])
-def unlock(request):
-    zosia = get_object_or_404(Zosia, active=True)
-    room = get_object_or_404(UserRoom, user=request.user).room
-    if not zosia.is_rooming_open:
-        return JsonResponse({'status': 'time_passed'}, status=400)
-    result = room.unlock(request.user)
-    if result:
-        return JsonResponse({'status': 'ok'})
-    else:
-        return JsonResponse({'status': 'not_changed'})
 
 
 # https://docs.djangoproject.com/en/1.11/howto/outputting-csv/

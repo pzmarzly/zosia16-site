@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
-
 import os
 import random
 import string
@@ -19,10 +18,13 @@ import raven
 # Google API key
 GAPI_KEY = os.environ.get('GAPI_KEY')
 
+GAPI_PLACE_BASE_URL = "https://www.google.com/maps/embed/v1/place"
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 def random_string(length=10):
-    return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length))
+    return ''.join(
+        random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
 SECRET_KEY = os.environ.get('SECRET_KEY', random_string(20))
@@ -51,7 +53,7 @@ DEFAULT_FROM_EMAIL = "admin@" + ANYMAIL["MAILGUN_SENDER_DOMAIN"]
 # integrated in any place anyway, so if you feel like it it would be
 # really cool if you added the support
 sentry_dsn = os.environ.get('SENTRY_DSN')
-if sentry_dsn:
+if sentry_dsn is not None:
     RAVEN_CONFIG = {
         'dsn': sentry_dsn,
         # If you are using git, you can also automatically configure the
@@ -61,7 +63,14 @@ if sentry_dsn:
 
 # Django REST framework (https://www.django-rest-framework.org)
 REST_FRAMEWORK = {
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning'
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -71,16 +80,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 INSTALLED_APPS = [
     'materializecssform',
-    'rest_framework',
     'anymail',
+    'rest_framework',
+    'drf_yasg',
     'raven.contrib.django.raven_compat',
-    'rooms.apps.RoomsConfig',
     'blog.apps.BlogConfig',
     'conferences.apps.ConferencesConfig',
-    'users.apps.UsersConfig',
-    'sponsors.apps.SponsorsConfig',
     'lectures.apps.LecturesConfig',
     'questions.apps.QuestionsConfig',
+    'sponsors.apps.SponsorsConfig',
+    'rooms.apps.RoomsConfig',
+    'users.apps.UsersConfig',
+    'utils.apps.UtilsConfig',
     'schedule.apps.ScheduleConfig',
     'django.contrib.admin',
     'django.contrib.auth',
