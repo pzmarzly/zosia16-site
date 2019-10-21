@@ -1,27 +1,31 @@
 from rest_framework import serializers
 
-from .models import Event, Schedule, ScheduleEntry, ScheduleDay
+from schedule.models import Event, Schedule, ScheduleDay, ScheduleEntry
+
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ("title", "description", "id")
+        fields = ["id", "title", "description"]
+
 
 class ScheduleEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleEntry
-        fields = ['start', 'end', 'event']
+        fields = ["start", "end", "event"]
+
 
 class ScheduleDaySerializer(serializers.ModelSerializer):
     entries = ScheduleEntrySerializer(many=True, read_only=True)
+
     class Meta:
         model = ScheduleDay
-        fields = ['name', 'start', 'entries', 'id']
+        fields = ["id", "name", "start", "entries"]
+
 
 class ScheduleSerializer(serializers.ModelSerializer):
     days = ScheduleDaySerializer(many=True, read_only=True)
+
     class Meta:
         model = Schedule
-        fields = ['name', 'is_active', 'days', 'id']
-
-
+        fields = ["id", "name", "days", "is_active"]

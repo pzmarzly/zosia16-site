@@ -34,6 +34,7 @@ urlpatterns = \
 
         # API URLs
         re_path(r'^api/(?P<version>(v1))/rooms/', include(('rooms.api.urls', 'rooms'))),
+        re_path(r'^api/(?P<version>(v1))/schedules/', include(('schedule.api.urls', 'schedule'))),
     ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:

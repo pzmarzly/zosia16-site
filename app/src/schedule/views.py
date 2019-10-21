@@ -1,59 +1,13 @@
-
-from schedule.models import ScheduleEntry, Event, Schedule
-from schedule.forms import EventForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
-from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.translation import ugettext_lazy as _
 from django.http.response import Http404
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.http import require_http_methods
 
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from schedule.forms import EventForm
+from schedule.models import Event, Schedule, ScheduleEntry
 
-from .serializers import EventSerializer, ScheduleSerializer
-
-
-class EventDetail(APIView):
-    def get(self, request, version, pk, format=None):
-        event = get_object_or_404(Event, pk=pk)
-        serializer = EventSerializer(event, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class EventList(APIView):
-    def get(self, request, version, format=None):
-        events = Event.objects.all()
-        serializer = EventSerializer(events, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class ScheduleDetail(APIView):
-    def get(self, request, version, pk, format=None):
-        schedule = get_object_or_404(Schedule, pk=pk)
-        serializer = ScheduleSerializer(schedule, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def delete(self, request, version, pk, format=None):
-        schedule = get_object_or_404(Schedule, pk=pk)
-        schedule.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-class ScheduleList(APIView):
-    def post(self, request, version, format=None):
-        serializer = ScheduleSerializer(data=request.data, context={'request': request})
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def get(self, request, version, format=None):
-        schedules = Schedule.objects.all()
-        serializer = ScheduleSerializer(schedules, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @login_required
 @require_http_methods(['GET'])
@@ -61,11 +15,12 @@ def index(request):
     active_schedules = Schedule.objects.filter(is_active=True)
     if active_schedules.count() == 0:
         return render(request, 'schedule/no_schedule.html')
-    
+
     schedule = active_schedules[0]
     schedule_entries = ScheduleEntry.objects.filter(schedule=schedule)
     ctx = {'objects': schedule_entries}
     return render(request, 'schedule/schedule.html', ctx)
+
 
 @login_required
 @require_http_methods(['GET', 'POST'])
@@ -81,12 +36,14 @@ def add_event(request):
             messages.error(request, _("Please review your form"))
     return render(request, 'schedule/add_event.html', ctx)
 
+
 @login_required
 @require_http_methods(['GET'])
 def events(request):
     events = Event.objects.all()
     ctx = {'objects': events}
     return render(request, 'schedule/events.html', ctx)
+
 
 @login_required
 @require_http_methods(['GET', 'POST'])
@@ -105,6 +62,7 @@ def edit_event(request, event_id=None):
     ctx = {'form': form, 'object': event}
     return render(request, 'schedule/add_event.html', ctx)
 
+
 @login_required
 @require_http_methods(['GET'])
 def show_event(request, event_id=None):
@@ -113,6 +71,7 @@ def show_event(request, event_id=None):
     event = get_object_or_404(Event, pk=event_id)
     ctx = {'event': event}
     return render(request, 'schedule/show_event.html', ctx)
+
 
 def planner(request):
     return render(request, 'schedule/planner.html')
