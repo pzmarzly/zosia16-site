@@ -1,14 +1,12 @@
+# -*- coding: utf-8 -*-
 import csv
 from io import TextIOWrapper
-import json
 
-from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.shortcuts import get_object_or_404, render, reverse
 from django.template import Context, loader
-from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.vary import vary_on_cookie

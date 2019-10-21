@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from schedule.models import Event, Schedule, ScheduleDay, ScheduleEntry

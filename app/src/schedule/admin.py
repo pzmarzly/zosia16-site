@@ -1,6 +1,7 @@
-
+# -*- coding: utf-8 -*-
 from django.contrib import admin
-from .models import Event, Schedule, ScheduleEntry, ScheduleDay
+
+from schedule.models import Event, Schedule, ScheduleDay, ScheduleEntry
 
 admin.site.register(Event)
 admin.site.register(Schedule)
