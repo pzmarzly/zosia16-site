@@ -5,8 +5,12 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from schedule.api import views
 
 urlpatterns = format_suffix_patterns([
-    path(r'', views.ScheduleList.as_view(), name="schedule-list"),
-    path(r'<int:pk>/', views.ScheduleDetail.as_view(), name="schedule-detail"),
-    path(r'events/', views.EventList.as_view(), name="event-list"),
-    path(r'events/<int:pk>/', views.EventDetail.as_view(), name="event-detail"),
+    path("", views.ScheeduleViewSet.as_view({"get": "list", "post": "create"}),
+         name="schedule-list"),
+    path("<int:pk>/", views.ScheeduleViewSet.as_view({"get": "retrieve",
+                                                      "put": "partial_update",
+                                                      "delete": "destroy"}),
+         name="schedule-detail"),
+    path("events/", views.EventViewSet.as_view({"get": "list"}), name="event-list"),
+    path("events/<int:pk>/", views.EventViewSet.as_view({"get": "retrieve"}), name="event-detail"),
 ])
