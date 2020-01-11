@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # it's a dirty hack, but it has to suffice for now
 python ./manage.py migrate

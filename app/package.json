@@ -1,41 +1,35 @@
 {
   "name": "zosia16-site",
-  "version": "1.0.0",
-  "description": "Django 1.10 version of ZOSIA registration page - v2016 edition.",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Django 2.2 version of ZOSIA registration page",
   "scripts": {
-    "build": "webpack",
-    "deps": "cd static && bower --allow-root install"
+    "build": "webpack --mode production",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/scoiatael/zosia16-site.git"
+    "url": "git+https://github.com/ksiuwr/zosia16-site.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "KSI UWr <ksi@cs.uni.wroc.pl> (https://ksi.ii.uni.wroc.pl/)",
+  "license": "GPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/scoiatael/zosia16-site/issues"
+    "url": "https://github.com/ksiuwr/zosia16-site/issues"
   },
-  "homepage": "https://github.com/scoiatael/zosia16-site#readme",
+  "homepage": "https://github.com/ksiuwr/zosia16-site#readme",
   "dependencies": {
+    "@babel/cli": "=7.2.3",
+    "@babel/core": "=7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.2.3",
     "@babel/preset-env": "^7.2.3",
-    "bower": "^1.8.0",
-    "eslint-plugin-react": "^7.12.0",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.4",
+    "copy-webpack-plugin": "^5.0.1",
+    "jquery": "^3.4.1",
+    "materialize-css": "^1.0.0",
     "react": "^16.7.0",
     "react-beautiful-dnd": "^10.0.3",
     "react-dom": "^16.7.0",
-    "styled-components": "^4.1.3"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.2.2",
-    "@babel/plugin-proposal-class-properties": "^7.2.3",
-    "@babel/preset-es2015": "^7.0.0-beta.53",
-    "@babel/preset-react": "^7.0.0",
-    "babel-eslint": "^10.0.1",
-    "babel-loader": "^8.0.4",
-    "eslint": "^5.11.1",
-    "eslint-plugin-babel": "^5.3.0",
+    "styled-components": "^4.1.3",
     "webpack": "^4.28.2",
     "webpack-cli": "^3.1.2"
   }
