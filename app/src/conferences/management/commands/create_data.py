@@ -4,11 +4,12 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import lorem_ipsum
 
-from conferences.models import Bus, Place, UserPreferences, Zosia
+from conferences.models import Bus, Place, Zosia
 from lectures.models import Lecture
 from questions.models import QA
 from rooms.models import Room
-from utils.constants import DURATION_CHOICES, LECTURE_TYPE, LectureInternals, MAX_BONUS_MINUTES
+from users.models import UserPreferences
+from utils.constants import FULL_DURATION_CHOICES, LECTURE_TYPE, LectureInternals, MAX_BONUS_MINUTES
 from utils.time_manager import now, time_point, timedelta_since, timedelta_since_now
 
 User = get_user_model()
@@ -31,7 +32,7 @@ def create_lecture(zosia, author):
         'events': lorem_ipsum.words(60)[:750],
         'title': lorem_ipsum.sentence()[:255],
         'abstract': ' '.join(lorem_ipsum.paragraphs(3))[:1000],
-        'duration': random.choice(DURATION_CHOICES)[0],
+        'duration': random.choice(FULL_DURATION_CHOICES)[0],
         'lecture_type': random.choice(LECTURE_TYPE)[0],
         'person_type': LectureInternals.PERSON_NORMAL,
         'description': lorem_ipsum.words(20)[:255],
@@ -164,6 +165,9 @@ def create_random_user_with_preferences(zosia, id):
     dinner_day_3 = random_bool() if accommodation_day_3 else False
     breakfast_day_4 = random_bool() if accommodation_day_3 else False
 
+    phone_number = f'+48 {random.randint(100, 999)} {random.randint(100, 999)} {random.randint(100, 999)}'
+    bus = random.choice(Bus.objects.find_with_free_places(zosia)) if random_bool() else None
+
     payment_acc = random_bool()
     bonus = random.randint(1, MAX_BONUS_MINUTES) if payment_acc else 0
 
@@ -181,6 +185,8 @@ def create_random_user_with_preferences(zosia, id):
         dinner_day_3=dinner_day_3,
         breakfast_day_4=breakfast_day_4,
 
+        bus=bus,
+        contact=phone_number,
         payment_accepted=payment_acc,
         bonus_minutes=bonus,
         terms_accepted=True,
@@ -196,11 +202,12 @@ def create_room(number):
             'available_beds_double': 1,
         }
     else:
+        bed_single = random.randint(2, 6)
         data = {
             'name': f"Nr. {number}",
             'description': lorem_ipsum.words(random.randint(3, 6)),
-            'beds_single': random.randint(1, 6),
-            'available_beds_single': random.randint(1, 6),
+            'beds_single': bed_single,
+            'available_beds_single': random.randint(2, bed_single),
         }
     return Room.objects.create(**data)
 
@@ -209,6 +216,13 @@ class Command(BaseCommand):
     help = 'Create custom data in database'
 
     def handle(self, *args, **kwargs):
+        if Zosia.objects.filter(active=True).count() > 0:
+            self.stdout.write('\033[1;91mThere is already active Zosia in database.'
+                              '\033[0m Do you want to create data anyway? [y/n]')
+            choice = input().lower()
+            if choice not in {'yes', 'y'}:
+                return
+
         place = create_place()
         self.stdout.write('Place for zosia has been created!')
 

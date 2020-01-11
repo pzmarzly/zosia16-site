@@ -2,7 +2,8 @@
 import React from "react";
 
 import {useModal} from "./modals/modals";
-import AddRoomModal from './modals/add_room_modal';
+import RoomPropertiesModal from './modals/room_properties_modal';
+import { create_room } from "./zosia_api";
 
 
 const SearchBar = (props) =>
@@ -13,10 +14,21 @@ const SearchBar = (props) =>
   }, []);
 
   const [openModal, closeModal] = useModal()
-  
+
   return (
+    <div>
+    { props.isAdminView ?
     <div className="col s12">
-      <ul style={{height: "50px", lineHeight: "45px"}}>
+      <ul style={{height: "50px", lineHeight: "45px", margin: 0}}>
+        <li style={{float:"left", margin: "5px"}}>
+          <a href="#" className="waves-effect waves-light btn" onClick={
+            () => openModal(RoomPropertiesModal, {closeModal, submit: create_room})
+          }> Add room </a>
+        </li>
+      </ul>
+    </div> : "" }
+    <div className="col s12">
+      <ul style={{height: "50px", lineHeight: "45px", "marginTop": 0}}>
         <li style={{float: "left", margin: "5px", marginTop: "12px"}}>
             <i className="material-icons black-text">search</i>
         </li>
@@ -29,16 +41,14 @@ const SearchBar = (props) =>
             <span> Show full rooms </span>
           </label>
         </li>
-        <li className="hide-on-med-and-down" style={{float:"left", margin: "5px"}}>
-          <a href="#" className="waves-effect waves-light btn" onClick={() => openModal(AddRoomModal, {closeModal})}> Add room </a>
-        </li>
         <li className="hide-on-small-only" style={{float: "right", margin: "5px"}}>
           <select id="sorting" onChange={props.onSortingStrategyChange}>
-            <option value="1">Sort by room numbers</option>
-            <option value="2">Sort by fullness</option>
+            <option value="room_numbers">Sort by room numbers</option>
+            <option value="fullness">Sort by fullness</option>
           </select>
         </li>
       </ul>
+    </div>
     </div>
   )
 }

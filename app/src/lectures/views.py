@@ -10,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 from conferences.models import Zosia
 from lectures.forms import LectureAdminForm, LectureForm, ScheduleForm
 from lectures.models import Lecture, Schedule
+from utils.forms import errors_format, get_durations
 
 
 @require_http_methods(['GET'])
@@ -58,17 +59,23 @@ def lecture_add(request):
         messages.error(request, _("Call for paper is not open right now!"))
         return redirect(reverse('index'))
 
-    ctx = {'form': LectureForm(request.POST or None)}
+    form = LectureForm(request.POST or None)
+    ctx = {'form': form}
+
     if request.method == 'POST':
-        if ctx['form'].is_valid():
-            lecture = ctx['form'].save(commit=False)
+        if form.is_valid():
+            lecture = form.save(commit=False)
             lecture.zosia = zosia
             lecture.author = request.user
             lecture.save()
-            messages.success(request, _("Lecture has been saved"))
+            messages.success(
+                request,
+                _("Lecture has been saved, it'll be displayed after it's accepted by organizers.")
+            )
             return redirect('lectures_index')
         else:
-            messages.error(request, _("Please review your form"))
+            messages.error(request, errors_format(form))
+
     return render(request, 'lectures/add.html', ctx)
 
 
@@ -80,20 +87,25 @@ def lecture_update(request, lecture_id=None):
     zosia = Zosia.objects.find_active()
     kwargs = {}
     ctx = {}
+
     if lecture_id:
         lecture = get_object_or_404(Lecture, pk=lecture_id)
         kwargs['instance'] = lecture
         ctx['object'] = lecture
-    ctx['form'] = LectureAdminForm(request.POST or None, **kwargs)
+
+    form = LectureAdminForm(request.POST or None, **kwargs)
+    ctx['form'] = form
+
     if request.method == 'POST':
-        if ctx['form'].is_valid():
-            lecture = ctx['form'].save(commit=False)
+        if form.is_valid():
+            lecture = form.save(commit=False)
             lecture.zosia = zosia
             lecture.save()
-            messages.success(request, _("Lecture has been saved"))
+            messages.success(request, _("Lecture has been saved."))
             return redirect('lectures_all_staff')
         else:
-            messages.error(request, _('Please review your form'))
+            messages.error(request, errors_format(form))
+
     return render(request, 'lectures/add.html', ctx)
 
 
@@ -118,3 +130,11 @@ def schedule_update(request):
         if form.is_valid():
             form.save()
     return render(request, 'lectures/schedule_add.html', ctx)
+
+
+def ajax_load_durations(request):
+    lecture_type = request.GET.get("lecture_type")
+    person_type = request.GET.get("person_type")
+    durations = {'durations': [d[0] for d in get_durations(lecture_type, person_type)]}
+
+    return JsonResponse(durations);

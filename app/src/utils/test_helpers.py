@@ -1,5 +1,8 @@
-from conferences.models import Bus, Place, UserPreferences, Zosia
-from users.models import User
+# -*- coding: utf-8 -*-
+import re
+
+from conferences.models import Bus, Place, Zosia
+from users.models import Organization, User, UserPreferences
 from utils.time_manager import now, timedelta_since_now
 
 # NOTE: Using powers of 2 makes it easier to test if sums are precise
@@ -22,11 +25,11 @@ def create_zosia(commit=True, **kwargs):
         'start_date': time,
         'place': place,
         'registration_start': time,
-        'registration_end': time,
+        'registration_end': timedelta_since_now(minutes=10),
         'rooming_start': timedelta_since_now(days=-1),
         'rooming_end': timedelta_since_now(days=1),
         'lecture_registration_start': time,
-        'lecture_registration_end': time,
+        'lecture_registration_end': timedelta_since_now(minutes=10),
         'price_accommodation': PRICE_ACCOMMODATION,
         'price_accommodation_breakfast': PRICE_BREAKFAST,
         'price_accommodation_dinner': PRICE_DINNER,
@@ -54,7 +57,15 @@ USER_DATA = [
 
 
 def create_user(index, **kwargs):
-    return User.objects.create_user(*USER_DATA[index], **kwargs)
+    first_name = re.split(r"password", USER_DATA[index][1], 1)[0]
+    last_name = USER_DATA[index][0].split("@", 1)[0]
+
+    return User.objects.create_user(email=USER_DATA[index][0], password=USER_DATA[index][1],
+                                    first_name=first_name, last_name=last_name, **kwargs)
+
+
+def create_organization(name, user=None, **kwargs):
+    return Organization.objects.create(name=name, user=user, **kwargs)
 
 
 def user_login(user):
@@ -79,5 +90,5 @@ def create_bus(commit=True, **override):
     return bus
 
 
-def create_user_preferences(**kwargs):
-    return UserPreferences.objects.create(terms_accepted=True, **kwargs)
+def create_user_preferences(user, zosia, **kwargs):
+    return UserPreferences.objects.create(user=user, zosia=zosia, terms_accepted=True, **kwargs)

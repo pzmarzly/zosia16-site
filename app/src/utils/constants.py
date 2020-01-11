@@ -2,6 +2,8 @@ from datetime import timedelta
 
 from django.utils.translation import ugettext_lazy as _
 
+DELIMITER = ", "
+
 # Shirts
 SHIRT_SIZE_CHOICES = [
     ("S", "S"),
@@ -54,7 +56,13 @@ class LectureInternals:
     PERSON_NORMAL = "2"
 
 
-DURATION_CHOICES = [
+LECTURE_NORMAL_MAX_DURATION = 60
+
+LECTURE_SPONSOR_MAX_DURATION = 90
+
+WORKSHOP_MIN_DURATION = 30
+
+FULL_DURATION_CHOICES = [
     (10, "10"),
     (15, "15"),
     (20, "20"),
@@ -65,6 +73,14 @@ DURATION_CHOICES = [
     (90, "90"),
     (120, "120")
 ]
+
+LECTURE_NORMAL_DURATION_CHOICES = [d for d in FULL_DURATION_CHOICES if
+                                   d[0] <= LECTURE_NORMAL_MAX_DURATION]
+
+LECTURE_SPONSOR_DURATION_CHOICES = [d for d in FULL_DURATION_CHOICES if
+                                    d[0] <= LECTURE_SPONSOR_MAX_DURATION]
+
+WORKSHOP_DURATION_CHOICES = [d for d in FULL_DURATION_CHOICES if d[0] >= WORKSHOP_MIN_DURATION]
 
 LECTURE_TYPE = [
     (LectureInternals.TYPE_LECTURE, _("Lecture")),
@@ -87,3 +103,7 @@ EVENT_TYPES = [
 
 # Time
 DEFAULT_TIME_FORMAT = "%d.%m.%Y %H:%M %Z"
+
+# S3 bucket name
+BUCKET_NAME = "zosia-storage"
+BUCKET_URL = f"https://{BUCKET_NAME}.s3.eu-central-1.amazonaws.com/"

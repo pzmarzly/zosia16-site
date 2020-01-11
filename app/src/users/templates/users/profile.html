@@ -24,7 +24,7 @@
     <div class="col s12">
       <div class="card">
         <div class="card-content">
-          <div class="card-title">{{ user.display_name }} - {% trans "profile" %}</div>
+          <div class="card-title">{{ user.full_name }} - {% trans "profile" %}</div>
           <div class="row">
             <div class="col s12">
               {{ user.email }}
@@ -65,6 +65,10 @@
                 <div class="col s12">
                   {% if current_prefs.room is not None %}
                     <span style="font-size: 1.1rem">{% trans "You have been assigned to" %} <b>{{ current_prefs.room }}</b></span>
+                    {% if current_prefs.roommate is not None %}
+                    <br/>
+                    <span>{% trans "Room will be occupied by: " %}{{ current_prefs.roommate }}</span>
+                    {% endif %}
                   {% else %}
                     <p>{% trans "Your rooms assignment will start at" %}: {{current_prefs.rooming_start_time | zoneformat:"Europe/Warsaw"}}</p>
                   {% endif %}
@@ -165,12 +169,26 @@
             </h5>
           {% else %}
             <div class="card-content">
-              <p> No preferences set. </p>
+              {% if not zosia.is_registration_open %}
+              <p>{% trans "Registration will open at" %} {{zosia.registration_start | zoneformat:"Europe/Warsaw"}}</p>
+              {% elif zosia.is_registration_over %}
+              <p>{% trans "Registration has ended - we hope to see you next year :)" %}</p>
+              {% else %}
+              <p>{% trans "You are not registered - no preferences set." %}</p>
+              {% endif %}
             </div>
           {% endif %}
         </div>
         <div class="card-action">
-          <a href="{% url 'user_zosia_register' zosia.id %}">{% trans "Update preferences" %}</a>
+          {% if zosia.is_registration_open and not zosia.is_registration_over or zosia.is_registration_over and current_prefs %}
+          <a href="{% url 'user_zosia_register' %}">
+              {% if current_prefs %}
+              {% trans "Update preferences" %}
+              {% else %}
+              {% trans "Register" %}
+              {% endif %}
+          </a>
+          {% endif %}
         </div>
       </div>
     </div>
