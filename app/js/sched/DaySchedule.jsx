@@ -3,10 +3,10 @@ import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { showTime } from './Helpers';
 import AccessTime from './AccessTime';
 import Break from './Break';
-import { 
+import {
   Time,
   DurTime,
-  Entry, 
+  Entry,
   ColumnContainer,
   EntryContainer,
   Duration,
@@ -21,8 +21,9 @@ const ScheduleLecture = (props) => {
       <Entry
       ref={provided.innerRef}
       {...provided.draggableProps}
+      {...provided.dragHandleProps}
       >
-      <Duration {...provided.dragHandleProps}>
+      <Duration >
         <Time> {showTime(startTime)} </Time>
         <DurTime> {lecture.duration} </DurTime>
         <Time> {showTime(endTime)} </Time>
@@ -45,18 +46,18 @@ class DaySchedule extends React.Component
     if (lecture.type === "lecture")
     {
       return (
-        <ScheduleLecture 
+        <ScheduleLecture
         key={lectureId}
         focus={this.props.focus}
-        lecture={lecture} 
+        lecture={lecture}
         index={i}
         startTime={startTime}
         endTime={endTime}
         />);
     }
-    else 
+    else
     {
-      return (<Break focus={this.props.focus} key={lectureId} lecture={lecture} index={i}/>);	
+      return (<Break focus={this.props.focus} key={lectureId} lecture={lecture} index={i}/>);
     }
   }
   /* eslint-disable no-unused-expressions */
@@ -66,17 +67,17 @@ class DaySchedule extends React.Component
       <ColumnContainer>
       <div><h4>{this.props.title}</h4></div>
       <Droppable droppableId={this.props.id} type="PERSON">
-      {(provided, snapshot) => { 
-        const time = new Date(this.props.startTime);
-        return (
-          <EntryContainer 
-          ref={provided.innerRef} 
-          {...provided.droppableProps}>
-          {this.props.lectureIds.map(
-            (lectureId, i) => this.element(lectureId, i, time))}
-          {provided.placeholder}
-          </EntryContainer>)
-      }}			
+          {(provided, snapshot) => {
+            const time = new Date(this.props.startTime);
+            return (
+              <EntryContainer
+              ref={provided.innerRef}
+              {...provided.droppableProps}>
+              {this.props.lectures.map(
+                (lectureId, i) => this.element(lectureId, i, time))}
+              {provided.placeholder}
+              </EntryContainer>)
+          }}
       </Droppable>
       </ColumnContainer>);
   }

@@ -1,14 +1,12 @@
+# -*- coding: utf-8 -*-
 import csv
 from io import TextIOWrapper
-import json
 
-from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.shortcuts import get_object_or_404, render, reverse
 from django.template import Context, loader
-from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.vary import vary_on_cookie
@@ -26,35 +24,7 @@ from rooms.serializers import room_to_dict, user_to_dict
 @require_http_methods(['GET'])
 def index(request):
     # Return HTML w/ rooms layout
-    try:
-        zosia = Zosia.objects.get(active=True)
-    except Zosia.DoesNotExist:
-        messages.error(request, _('There is no active conference'))
-        return redirect(reverse('index'))
-
-    try:
-        preferences = UserPreferences.objects.get(zosia=zosia, user=request.user)
-    except UserPreferences.DoesNotExist:
-        messages.error(request, _('Please register first'))
-        return redirect(reverse('user_zosia_register', kwargs={'zosia_id': zosia.pk}))
-
-    paid = preferences.payment_accepted
-    if not paid:
-        messages.error(request, _('Your payment must be accepted first'))
-        return redirect(reverse('accounts_profile'))
-
-    if not zosia.is_rooming_open:
-        messages.error(request, _('Room registration is not active yet'))
-        return redirect(reverse('accounts_profile'))
-
-    rooms = Room.objects.all_visible().prefetch_related('members').all()
-    rooms = sorted(rooms, key=lambda x: x.pk)
-    rooms_json = json.dumps(list(map(room_to_dict, rooms)))
-    context = {
-        'rooms': rooms,
-        'rooms_json': rooms_json,
-    }
-    return render(request, 'rooms/index.html', context)
+    return render(request, 'rooms/index.html')
 
 
 # GET

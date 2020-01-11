@@ -20,6 +20,10 @@ const Details = (props) => {
     });
   }
 
+  if (lecture == undefined) {
+    return null;
+  }
+
   const {type} = lecture;
   let content = "";
   if (type === "lecture") {
@@ -54,11 +58,9 @@ const Details = (props) => {
   else
     content = JSON.stringify(props.lecture, null, 2)
   return (
-    <div className="card">
-    <div className="card-content">
-      <span className="card-title"> Details </span>
+    <div>
+      <h4> Details </h4>
       {content}
-    </div>
     </div>
   )
 }

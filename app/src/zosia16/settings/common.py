@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     'rooms.apps.RoomsConfig',
     'users.apps.UsersConfig',
     'utils.apps.UtilsConfig',
+    'schedule.apps.ScheduleConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

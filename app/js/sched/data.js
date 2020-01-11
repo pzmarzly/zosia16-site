@@ -25,33 +25,33 @@ const initial_lectures =
 }
 
 const initial_columns = {
-	"thu": {
+    "thu": {
 		id: "thu",
 		title: "Thursday",
-		lectureIds: [],
-		startTime: Date.now()
+		lectures: [],
+		startTime: new Date(Date.now())
 	},
 	"fri": {
 		id: "fri",
 		title: "Friday",
-		lectureIds: [],
-		startTime: Date.now()
+		lectures: [],
+		startTime: new Date(Date.now())
 	},
 	"sat" : {
 		id: "sat",
 		title: "Saturday",
-		lectureIds: [],
-		startTime: Date.now()
+		lectures: [],
+		startTime: new Date(Date.now())
 	},
 	"lec" : {
 		id: "lec",
 		title: "Lectures",
-		lectureIds: ["1", "2", "3"],
-		startTime: Date.now()
+		lectures: ["1"],
+		startTime: new Date(Date.now())
 	}
 }
 
-export { 
+export {
 	initial_lectures,
 	initial_columns
 };

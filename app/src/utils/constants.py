@@ -58,6 +58,14 @@ PERSON_TYPE = [
     ("2", _("Normal"))
 ]
 
+# Schedule
+EVENT_TYPES = [
+    ('1', _("Workshop")),
+    ('2', _("Lecture")),
+    ('3', _("Meal")),
+    ('4', _("Other"))
+]
+
 # Time
 
 DEFAULT_TIME_FORMAT = "%d.%m.%Y %H:%M %Z"

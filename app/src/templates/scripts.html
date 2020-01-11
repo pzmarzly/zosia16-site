@@ -1,0 +1,21 @@
+{% load static %}
+{% load i18n %}
+
+<!--Import jQuery before materialize.js-->
+<script type="text/javascript" src="{% static 'script/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'script/materialize.min.js' %}"></script>
+
+<!-- MESSAGES -->
+<script type="text/javascript">
+    // Or with jQuery
+    $(document).ready(function(){
+        $('select').formSelect();
+        $('.dropdown-trigger').dropdown();
+        $('.sidenav').sidenav();
+        {% for message in messages %}
+            M.toast('{{ message }}', 4000, '{{ message.tags }}');
+        {% endfor %}
+    });
+</script>
+
+<script type="text/javascript" src="{% static 'script/main.js' %}"></script>

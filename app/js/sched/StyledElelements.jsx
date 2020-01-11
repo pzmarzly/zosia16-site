@@ -3,14 +3,16 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Entry = styled.div`
-  border-radius: 2px;
+  border-sizing: border-box;
+  border-top: 1px solid white;
   font-size: 10pt;
   color: white;
-  background-color: #607d8b;
-  border: 1px solid grey;
+  background-color: #009688;
   display: flex;
-  padding: 3px;
-  margin: 3px;
+  padding: 0.2rem;
+  &:hover {
+    background: #4db6ac;
+  }
 `;
 
 const Time = styled.div`
@@ -32,7 +34,7 @@ const Details = styled.div`
 `;
 
 const Duration = styled.div`
-  min-width: 40px; 
+  min-width: 40px;
   text-align: center;
   border-right: 1px solid white;
   padding-right: 5px;
@@ -49,7 +51,9 @@ const ColumnContainer = styled.div`
 `
 
 const EntryContainer = styled.div`
-  flex-grow: 1;
+  border-bottom: 1px solid white;
+  min-height: 50px;
+  margin: 0.5rem;
 `;
 
 export { Entry, Duration, Details, Time, DurTime, ColumnContainer, EntryContainer };

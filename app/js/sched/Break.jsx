@@ -9,11 +9,12 @@ const Break = (props) =>
   return (
     <Draggable draggableId={lecture.id} index={index}>
     {(provided, snapshot) => (
-      <Entry 
-      ref={provided.innerRef} 
+      <Entry
+      ref={provided.innerRef}
       {...provided.draggableProps}
+      {...provided.dragHandleProps}
       >
-      <Duration {...provided.dragHandleProps}> 
+      <Duration >
         <DurTime> {lecture.duration} </DurTime>
       </Duration>
       <Details onClick={() => props.focus(lecture.id)}> Break </Details>

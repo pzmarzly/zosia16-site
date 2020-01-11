@@ -3,7 +3,7 @@ import React from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import AccessTime from './AccessTime'
 import Break from './Break'
-import { 
+import {
   Entry,
   DurTime,
   ColumnContainer,
@@ -12,14 +12,15 @@ import {
   Details
 } from './StyledElelements';
 
+
 const BreakGenerator = () => {
   return (
     <Draggable draggableId={"break_gen"} index={0}>
     {(provided, snapshot) => (
-      <Entry 
-      ref={provided.innerRef} 
-      {...provided.dragHandleProps} 
-      {...provided.draggableProps} 
+      <Entry
+      ref={provided.innerRef}
+      {...provided.dragHandleProps}
+      {...provided.draggableProps}
       >
       <div> Drag for 10 minute break </div>
       </Entry>
@@ -37,11 +38,13 @@ const Lecture = (props) =>
       <Entry
       ref={provided.innerRef}
       {...provided.draggableProps}
+      onClick={() => props.focus(lecture.id)}
+      {...provided.dragHandleProps}
       >
-      <Duration {...provided.dragHandleProps}> 
+      <Duration >
         <DurTime> {lecture.duration} </DurTime>
       </Duration>
-      <Details onClick={() => props.focus(lecture.id)}>
+      <Details >
       <div> {lecture.title} </div>
       </Details>
       </Entry>
@@ -68,7 +71,7 @@ class LectureList extends React.Component {
     }
     else
     {
-      console.log("Error unhandled type");	
+      console.log("Error unhandled type");
     }
   }
 
@@ -78,21 +81,21 @@ class LectureList extends React.Component {
     return (
       <ColumnContainer>
       <div><h4>{this.props.title}</h4></div>
-      <Droppable droppableId={this.props.id} type="PERSON">	
+      <Droppable droppableId={this.props.id} type="PERSON">
       {(provided, snapshot) => (
-        <EntryContainer 
-        ref={provided.innerRef} 
+        <EntryContainer
+        ref={provided.innerRef}
         {...provided.droppableProps}
         >
         <BreakGenerator/>
-        {this.props.lectureIds.map(
+        {this.props.lectures.map(
           (lectureId, i) => this.element(lectureId, i)
         )}
         {provided.placeholder}
         </EntryContainer>
-      )}			
+      )}
       </Droppable>
-      </ColumnContainer>);	
+      </ColumnContainer>);
   }
 }
 

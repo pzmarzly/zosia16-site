@@ -38,10 +38,12 @@ urlpatterns = \
         re_path(r'^sponsors/', include('sponsors.urls')),
         re_path(r'^lectures/', include('lectures.urls')),
         re_path(r'^questions/', include('questions.urls')),
+        re_path(r'^schedule/', include('schedule.urls')),
 
         # API URLs
         re_path(r'^api/(?P<version>(v1))/rooms/', include('rooms.api.urls')),
         re_path(r'^api/(?P<version>(v1))/users/', include('users.api.urls')),
+        re_path(r'^api/(?P<version>(v1))/schedules/', include('schedule.api.urls')),
 
         # Swagger URLs
         re_path(r'^api/swagger/', schema_view.with_ui('swagger', cache_timeout=0),
