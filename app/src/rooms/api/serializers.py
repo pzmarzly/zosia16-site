@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-from django.utils.dateparse import parse_datetime
 from rest_framework import serializers
 
 from rooms.models import Room, RoomLock, UserRoom
+from users.api.serializers import UserDataSerializer
 from users.models import User
+from utils.time_manager import parse_timezone
 
 
-class UserRoomSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects)
+class UserInRoomSerializer(serializers.ModelSerializer):
+    user = UserDataSerializer()
 
     class Meta:
         model = UserRoom
@@ -16,90 +17,55 @@ class UserRoomSerializer(serializers.ModelSerializer):
 
 class RoomMembersSerializer(serializers.ModelSerializer):
     room_name = serializers.CharField(source="room.name")
-    user_first_name = serializers.CharField(source="user.first_name")
-    user_last_name = serializers.CharField(source="user.last_name")
+    user = UserDataSerializer()
 
     class Meta:
         model = UserRoom
-        fields = ("room_name", "user_first_name", "user_last_name")
+        fields = ("room_name", "user")
 
 
 class RoomLockSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects)
+    user = UserDataSerializer()
 
     class Meta:
         model = RoomLock
         fields = ("user", "password", "expiration_date")
 
 
-class RoomBedsSerializer(serializers.BaseSerializer):
-    single = serializers.IntegerField()
-    double = serializers.IntegerField()
-
-    def to_representation(self, instance):
-        return {"single": instance.get("single"), "double": instance.get("double")}
-
-    def to_internal_value(self, data):
-        single = data.get("single")
-        double = data.get("double")
-
-        return {"single": single, "double": double}
-
-
 class RoomSerializer(serializers.ModelSerializer):
     # Accepted beds number range is from 0 to 42. You don't expect 43 beds in one room, do you?
-    beds = serializers.DictField(child=serializers.IntegerField(min_value=0, max_value=42))
-    available_beds = serializers.DictField(
-        child=serializers.IntegerField(min_value=0, max_value=42))
+    beds_single = serializers.IntegerField(min_value=0, max_value=42)
+    beds_double = serializers.IntegerField(min_value=0, max_value=42)
+    available_beds_single = serializers.IntegerField(min_value=0, max_value=42)
+    available_beds_double = serializers.IntegerField(min_value=0, max_value=42)
     lock = RoomLockSerializer(read_only=True)
-    members = UserRoomSerializer(source="userroom_set", read_only=True, many=True)
+    members = UserInRoomSerializer(source="userroom_set", read_only=True, many=True)
 
     class Meta:
         model = Room
-        fields = ("id", "name", "description", "hidden", "beds", "available_beds", "lock",
-                  "members")
+        fields = ("id", "name", "description", "hidden", "beds_single", "beds_double",
+                  "available_beds_single", "available_beds_double", "lock", "members")
 
-    def create(self, validated_data):
-        beds_data = validated_data.pop("beds")
-        available_beds_data = validated_data.pop("available_beds")
+    def validate(self, data):
+        super().validate(data)
 
-        self._validate_beds(beds_data, available_beds_data)
+        beds_single_data = data.get("beds_single", 0)
+        beds_double_data = data.get("beds_double", 0)
+        available_beds_single_data = data.get("available_beds_single", 0)
+        available_beds_double_data = data.get("available_beds_double", 0)
 
-        return Room.objects.create(**validated_data,
-                                   beds_single=beds_data.get("single"),
-                                   beds_double=beds_data.get("double"),
-                                   available_beds_single=available_beds_data.get("single"),
-                                   available_beds_double=available_beds_data.get("double"))
-
-    def update(self, instance, validated_data):
-        beds_data = validated_data.pop("beds")
-        available_beds_data = validated_data.pop("available_beds")
-
-        self._validate_beds(beds_data, available_beds_data)
-
-        instance.name = validated_data.get("name", instance.name)
-        instance.description = validated_data.get("description", instance.description)
-        instance.hidden = validated_data.get("hidden", instance.hidden)
-        instance.beds_single = beds_data.get("single", instance.beds_single)
-        instance.beds_double = beds_data.get("double", instance.beds_double)
-        instance.available_beds_single = available_beds_data.get("single",
-                                                                 instance.available_beds_single)
-        instance.available_beds_double = available_beds_data.get("double",
-                                                                 instance.available_beds_double)
-
-        instance.save()
-
-        return instance
-
-    @staticmethod
-    def _validate_beds(beds_data, available_beds_data):
-        if available_beds_data.get("single") > beds_data.get("single"):
+        if available_beds_single_data > beds_single_data + beds_double_data:
             raise serializers.ValidationError(
-                "Cannot set more available single beds than real single beds")
+                "Cannot set more available single beds than real single beds plus double beds")
 
-        if available_beds_data.get("double") > beds_data.get("double"):
+        double_as_single = max(0, available_beds_single_data - beds_single_data)
+
+        if available_beds_double_data > beds_double_data - double_as_single:
             raise serializers.ValidationError(
-                "Cannot set more available double beds than real double beds")
+                "Cannot set more available double beds than real double beds minus "
+                "double-as-single beds")
+
+        return data
 
 
 class LeaveMethodSerializer(serializers.BaseSerializer):
@@ -114,7 +80,7 @@ class LeaveMethodSerializer(serializers.BaseSerializer):
     def to_internal_value(self, data):
         user = data.get("user")
 
-        if not user:
+        if user is None:
             raise serializers.ValidationError({"user": "This field is required."})
 
         return {"user": user}
@@ -130,7 +96,7 @@ class JoinMethodSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         representation = {"user": instance.user}
 
-        if instance.password:
+        if instance.password is not None:
             representation["password"] = instance.password
 
         return representation
@@ -139,7 +105,7 @@ class JoinMethodSerializer(serializers.BaseSerializer):
         user = data.get("user")
         password = data.get("password")
 
-        if not user:
+        if user is None:
             raise serializers.ValidationError({"user": "This field is required."})
 
         return {"user": user, "password": password}
@@ -157,7 +123,7 @@ class LockMethodSerializer(serializers.BaseSerializer):
     def to_internal_value(self, data):
         user = data.get("user")
 
-        if not user:
+        if user is None:
             raise serializers.ValidationError({"user": "This field is required."})
 
         return {"user": user}
@@ -174,7 +140,7 @@ class LockMethodAdminSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         representation = {"user": instance.user}
 
-        if instance.expiration_date:
+        if instance.expiration_date is not None:
             representation["expiration_date"] = instance.expiration_date
 
         return representation
@@ -183,8 +149,8 @@ class LockMethodAdminSerializer(serializers.BaseSerializer):
         user = data.get("user")
         expiration_date = data.get("expiration_date")
 
-        if not user:
+        if user is None:
             raise serializers.ValidationError({"user": "This field is required."})
 
-        return {"user": user} if not expiration_date else \
-            {"user": user, "expiration_date": parse_datetime(expiration_date)}
+        return {"user": user} if expiration_date is None else \
+            {"user": user, "expiration_date": parse_timezone(expiration_date)}
