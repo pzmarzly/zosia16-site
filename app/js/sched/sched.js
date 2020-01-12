@@ -8,5 +8,5 @@ ReactDOM.render(
     <ModalRoot/>
     <Schedule/>
   </ModalProvider>,
-  document.getElementById('react-root'));
+  document.getElementById('schedule-root'));
 

@@ -5,7 +5,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const config = {
   entry: {
     room: './js/room.js',
-    sched: './js/sched/sched.js',
+    sched_v1: './js/sched/sched.js',
+    sched_v2: './js/schedule.js',
     admin: './js/admin.js',
     add_organization: './js/add_organization.js',
     choose_from_s3: './js/choose_from_s3.js',

@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load materializecss %}
-{% load static %}
 
 {% block content %}
 <div class="container">
-  <div id="root"></div>
+    <form method="post">
+        {% csrf_token %}
+        {% include '_form.html' with form_name='Add schedule' %}
+    </form>
 </div>
 {% endblock content %}
 
@@ -16,5 +18,4 @@ $(document).ready(function() {
     $('textarea').addClass("materialize-textarea");
 });
 </script>
-<script type="text/javascript" src="{% static 'script/sched.min.js' %}"></script>
 {% endblock custom_scripts %}

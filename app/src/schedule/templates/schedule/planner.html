@@ -1,17 +1,11 @@
-
-{% load static %}
+{% extends "base.html" %}
 {% load i18n %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include 'header.html' %}
-</head>
-<body>
-    
-    <div id="react-root">
+
+{% block content %}
+    <div id="schedule-root">
     </div>
-    <!-- FOOTER -->
-    {% include 'scripts.html' %}
+{% endblock content %}
+
+{% block custom_scripts %}
     <script type="text/javascript" src="{% static 'script/sched.min.js' %}"></script>
-</body>
-</html>
+{% endblock custom_scripts %}
